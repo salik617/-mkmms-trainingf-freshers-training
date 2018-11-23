@@ -29,6 +29,8 @@ function constructUserList(){
 	appId.innerHTML = listHtml;
 }
 
+
+
 function updateUserList(users){
 	var userHtml = "";
 
@@ -43,7 +45,7 @@ function updateUserList(users){
 			userHtml += "<td>";
 				userHtml += "<a href='javascript:void(0)' onclick='showUser("+ users[i].id +")'> Show </a>";
 				userHtml += "<a href='javascript:void(0)' onclick='editUser("+ users[i].id +")'> Edit </a>";
-				userHtml += "<a href='javascript:void(0)' onclick='deleteUser("+ users[i].id +")'> Delete </a>";
+				userHtml += "<a href='javascript:void(0)' onclick='createUser("+ users[i].id +")'> Create </a>";
 			userHtml += "</td>";
 		userHtml += "</tr>"
 	}
@@ -93,6 +95,102 @@ function showResUser(user){
 	$("#myModal").modal('show');
 
 }
+
+
+function editUser(id){
+	$.ajax({
+		url: "/users/" + id,
+		dataType: 'json',
+		success: function(response){
+			editResUser(response);
+		},
+		error: function(){
+
+		}
+	})
+}
+
+function editResUser(user){
+	var html= "";
+	var dobarray=user.dob.split('-');
+
+	var paramName = document.getElementsByName('csrf-param')[0].content;
+	var token = $("[name='csrf-token']").attr('content');
+
+
+	html += '<form id="edit-form" data-type="json" action="/users/'+ user.id +'" accept-charset="UTF-8" method="post" data-remote=true>'
+	html += '<input type="hidden" name="_method" value="patch">'
+	html += '<input type="hidden" name="'+ paramName +'" value="'+ token +'"/>'
+
+
+	html += '<p>Name:<input type="text" name="user[name]" value="'+ user.name+'"/></p>'
+	html += '<p>Email:<input type="email" name="user[email]" value="'+ user.email+'"/></p>'
+	html += '<p>Phone:<input type="text" name="user[phone]" value="'+ user.phone+'"/></p>'
+	html += '<p>Address:<textarea name="user[address]">'+ user.address+'</textarea></p>'
+	html += '<p>Date of birth:'
+	html += "<select name='user[dob(3i)]' value='"+ dobarray[2]+"'>"
+	for(var a=1;a<=31;a++)
+	{
+		if (dobarray[2]==a){
+			html += "<option selected value='"+ a+ "'>"+ a +"</option>"
+		}
+		else{
+			html += "<option value ='"+ a +"'>"+ a +"</option>"
+	    }
+	}
+	html += "</select>"
+
+	html += "<select id='months' name = 'user[dob(2i)]' value='"+dobarray[1]+"'>"
+	html += "<option value ='01'>01</option>"
+	html += "<option value ='02'>02</option>"
+	html += "<option value ='03'>03</option>"
+	html += "<option value ='04'>04</option>"
+	html += "<option value ='05'>05</option>"
+	html += "<option value ='06'>06</option>"
+	html += "<option value ='07'>07</option>"
+	html += "<option value ='08'>08</option>"
+	html += "<option value ='09'>09</option>"
+	html += "<option value ='10'>10</option>"
+	html += "<option value ='11'>11</option>"
+	html += "<option value ='12'>12</option>"
+	html += "</select>"
+
+	html += "<select id='year'  name='user[dob(1i)]' value='"+dobarray[0]+"'>"
+	html += "<option value ='1990'>1990</option>"
+	html += "<option value ='1991'>1991</option>"
+	html += "<option value ='1992'>1992</option>"
+	html += "<option value ='1993'>1993</option>"
+	html += "<option value ='1994'>1994</option>"
+	html += "<option value ='1995'>1995</option>"
+	html += "<option value ='1996'>1996</option>"
+	html += "<option value ='1997'>1997</option>"
+	html += "<option value ='1998'>1998</option>"
+	html += "<option value ='1999'>1999</option>"
+	html += "<option value ='2008'>2008</option>"
+	html += "</select>"
+	html += '</p>'
+	html += '<p>Gender:<input type="text" name="user[gender]" value="'+ user.gender+'"/></p>'
+
+	html += '<button type="submit">Submit</button>'
+
+	html += '</form>'
+
+	$("#user-modal").html( html );
+	document.getElementById('months').value= dobarray[1];
+	$('#year').val(dobarray[0]); //jquery
+	$("#myModal").modal('show');
+
+	$("#edit-form").on("ajax:success",function(e){
+		// e.detail[0]
+		showResUser(e.detail[0])
+		getUserListContent()
+		//debugger;
+	}) 
+}
+
+//"user"=>{"name"=>"Shivani ", "email"=>"shivisankhla@gmail.com", "phone"=>"7597556898", "address"=>"6th block koramangala", "dob(1i)"=>"2008", "dob(2i)"=>"2", "dob(3i)"=>"2", "gender"=>"Female"}
+
+//{"_method"=>"patch", "authenticity_token"=>"wXbAJ/LWEZQ9GBPzgt8/XvLVd0GwPponR0hNtqPGHc0aaFXtxjztZ51EZ/Dn8DBWZaZAmaMEAg3KBHxyoZGAzg==", "name"=>"Shivani ", "email"=>"shivisankhla@gmail.com", "phone"=>"7597556898", "address"=>"6th block koramangala", "dob(3i)"=>"2", "dob(2i)"=>"07", "dob(1i)"=>"2008", "gender"=>"Female"
 
 
 function initializeApp(){
